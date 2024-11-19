@@ -31,7 +31,7 @@ your-sub-name, xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx
 ```  
 
 ##  Step 5: Execute the checksqlahb.ps1 for checking
-Open powershell, locate to the script folder, execute  [checksqlahb](\checksqlahb.ps1)
+Open powershell, locate to the script folder, execute  [checksqlahb](checksqlahb.ps1)
 ``` 
 .\checksqlahb.ps1
 ``` 
@@ -41,7 +41,7 @@ Set license change may takes 1-2 minutues for each SQL Server approximately. Ple
 After you see "Discovery and disablement completed", you can check the **findallsqlsvr.txt** for all SQL Servers discovery. You also can check the findahbonly.txt which only list out the SQL Server with Azure Hybrid Benefit enabled.    
 
 ##  Step 6: Execute the confirmsqlahb.ps1 for change all Azure Hybrid Benegfit to PayGO
-If you confirm to change all the SQL Servers listed in the **findallsqlsvr.txt** from Azure Hybrid Benefit to Pay as you go, then execute  [confirmsqlahb](\confirmsqlahb.ps1)
+If you confirm to change all the SQL Servers listed in the **findallsqlsvr.txt** from Azure Hybrid Benefit to Pay as you go, then execute  [confirmsqlahb](confirmsqlahb.ps1)
 
 ``` 
 .\confirmsqlahb.ps1
