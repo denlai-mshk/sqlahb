@@ -1,5 +1,5 @@
-# Steps to check Azure Hybrid Benefit for all SQL servers in your subscription
-This Powershell scripts are designed for changing the license type from Azure Hybrid Benefit to Pay as You Go.
+# Batch change the SQL Server license type for multiple subscriptions
+This Powershell scripts are designed for changing the license type for all SQL Servers deloyed in multiple subscriptions, from Azure Hybrid Benefit to Pay as You Go. It supports Azure SQL Database, Azure SQL Elastic Pool, Azure SQL Managed Instance and Azure SQL Managed Instance Pool.
 
 
 ##  Step 1: Install the Azure PowerShell Module
