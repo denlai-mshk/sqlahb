@@ -1,2 +1,2 @@
 "SubscriptionName", "SubscriptionId"
-app-data-ai-sub, 6ce80806-9645-4c72-8d3b-50a3455edcfd
+your-sub-name, xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx

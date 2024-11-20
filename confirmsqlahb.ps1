@@ -51,13 +51,13 @@ function Log-Discovery {
         [string]$LicenseType,
         [string]$vCores,
         [string]$StorageinGB,
-        [string]$SubscriptionId,
+        [string]$SubscriptionName,
         [string]$Region,
         [string]$ResourceGroup,
         [string]$SqlName,
         [string]$ResourceId
     )
-        $logEntry = "$SqlType, $LicenseType, $vCores, $StorageinGB, $SubscriptionId, $Region, $ResourceGroup, $SqlName, $ResourceId"
+        $logEntry = "$SqlType, $LicenseType, $vCores, $StorageinGB, $SubscriptionName, $Region, $ResourceGroup, $SqlName, $ResourceId"
     Add-Content -Path $outputFile -Value $logEntry
 }
 
@@ -67,13 +67,13 @@ function Log-AHBOnly {
         [string]$LicenseType,
         [string]$vCores,
         [string]$StorageinGB,
-        [string]$SubscriptionId,
+        [string]$SubscriptionName,
         [string]$Region,
         [string]$ResourceGroup,
         [string]$SqlName,
         [string]$ResourceId
     )
-        $logEntry = "$SqlType, $LicenseType, $vCores, $StorageinGB, $SubscriptionId, $Region, $ResourceGroup, $SqlName, $ResourceId"
+        $logEntry = "$SqlType, $LicenseType, $vCores, $StorageinGB, $SubscriptionName, $Region, $ResourceGroup, $SqlName, $ResourceId"
     Add-Content -Path $ahbonlyFile -Value $logEntry
 }
 
@@ -84,18 +84,18 @@ function Log-Disabled {
         [string]$LicenseType,
         [string]$vCores,
         [string]$StorageinGB,
-        [string]$SubscriptionId,
+        [string]$SubscriptionName,
         [string]$Region,
         [string]$ResourceGroup,
         [string]$SqlName,
         [string]$ResourceId
     )
-    $logEntry = "$SqlType, $LicenseType, $vCores, $StorageinGB, $SubscriptionId, $Region, $ResourceGroup, $SqlName, $ResourceId"
+    $logEntry = "$SqlType, $LicenseType, $vCores, $StorageinGB, $SubscriptionName, $Region, $ResourceGroup, $SqlName, $ResourceId"
     Add-Content -Path $disabledFile -Value $logEntry
 }
-Log-Discovery -SqlType "SqlType" -LicenseType "LicenseType" -vCores "vCores" -StorageinGB "StorageinGB"  -SubscriptionId "SubscriptionId" -Region "Region" -ResourceGroup "ResourceGroup"  -SqlName "SqlName" -ResourceId "ResourceId"
-Log-AHBOnly -SqlType "SqlType" -LicenseType "LicenseType" -vCores "vCores" -StorageinGB "StorageinGB"  -SubscriptionId "SubscriptionId" -Region "Region" -ResourceGroup "ResourceGroup"  -SqlName "SqlName" -ResourceId "ResourceId"
-Log-Disabled -SqlType "SqlType" -LicenseType "LicenseType" -vCores "vCores" -StorageinGB "StorageinGB"  -SubscriptionId "SubscriptionId" -Region "Region" -ResourceGroup "ResourceGroup"  -SqlName "SqlName" -ResourceId "ResourceId"
+Log-Discovery -SqlType "SqlType" -LicenseType "LicenseType" -vCores "vCores" -StorageinGB "StorageinGB"  -SubscriptionName "SubscriptionName" -Region "Region" -ResourceGroup "ResourceGroup"  -SqlName "SqlName" -ResourceId "ResourceId"
+Log-AHBOnly -SqlType "SqlType" -LicenseType "LicenseType" -vCores "vCores" -StorageinGB "StorageinGB"  -SubscriptionName "SubscriptionName" -Region "Region" -ResourceGroup "ResourceGroup"  -SqlName "SqlName" -ResourceId "ResourceId"
+Log-Disabled -SqlType "SqlType" -LicenseType "LicenseType" -vCores "vCores" -StorageinGB "StorageinGB"  -SubscriptionName "SubscriptionName" -Region "Region" -ResourceGroup "ResourceGroup"  -SqlName "SqlName" -ResourceId "ResourceId"
 
 Write-Output "$(Get-Date -Format HH:mm:ss) Job started"
 # Loop through each subscription
@@ -115,7 +115,7 @@ foreach ($subscription in $subscriptions) {
         Write-Output "Setting context for Subscription: $SubscriptionName ($SubscriptionId)"
 
         # Set the current subscription context
-        Select-AzSubscription -SubscriptionId $SubscriptionId -ErrorAction Stop
+        Select-AzSubscription -SubscriptionName $SubscriptionName -ErrorAction Stop
 
         # Discover SQL Instance Pools
         Write-Output "$(Get-Date -Format HH:mm:ss) Processing Get-AzSqlInstancePool"
@@ -126,10 +126,10 @@ foreach ($subscription in $subscriptions) {
             }            
             $vCores = $pool.VCores
             $storageInGB = "0" # no storage attributes in instance pools object
-            Log-Discovery -SqlType "sqlmipool" -LicenseType $pool.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionId $SubscriptionId -Region $pool.Location -ResourceGroup $pool.ResourceGroupName -SqlName $pool.InstancePoolName -ResourceId $pool.Id
+            Log-Discovery -SqlType "sqlmipool" -LicenseType $pool.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $pool.Location -ResourceGroup $pool.ResourceGroupName -SqlName $pool.InstancePoolName -ResourceId $pool.Id
 
             if ($pool.LicenseType -eq "BasePrice") {
-                Log-AHBOnly -SqlType "sqlmipool" -LicenseType $pool.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionId $SubscriptionId -Region $pool.Location -ResourceGroup $pool.ResourceGroupName -SqlName $pool.InstancePoolName -ResourceId $pool.Id
+                Log-AHBOnly -SqlType "sqlmipool" -LicenseType $pool.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $pool.Location -ResourceGroup $pool.ResourceGroupName -SqlName $pool.InstancePoolName -ResourceId $pool.Id
             }
             
             if ($Mode -eq "write" -and $pool.LicenseType -eq "BasePrice") {
@@ -138,7 +138,7 @@ foreach ($subscription in $subscriptions) {
                 Set-AzSqlInstancePool -ResourceGroupName $pool.ResourceGroupName -Name $pool.InstancePoolName -LicenseType "LicenseIncluded"
                 
                 # Log the successful disablement
-                Log-Disabled -SqlType "sqlmipool" -LicenseType "LicenseIncluded" -vCores $vCores -StorageinGB $storageInGB -SubscriptionId $SubscriptionId -Region $pool.Location -ResourceGroup $pool.ResourceGroupName -SqlName $pool.InstancePoolName -ResourceId $pool.Id
+                Log-Disabled -SqlType "sqlmipool" -LicenseType "LicenseIncluded" -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $pool.Location -ResourceGroup $pool.ResourceGroupName -SqlName $pool.InstancePoolName -ResourceId $pool.Id
             }
         }       
         # Discover SQL Managed Instances
@@ -155,10 +155,10 @@ foreach ($subscription in $subscriptions) {
                      
             $vCores = $mi.VCores
             $storageInGB = $mi.StorageSizeInGB
-            Log-Discovery -SqlType "sqlmi" -LicenseType $mi.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionId $SubscriptionId -Region $mi.Location -ResourceGroup $mi.ResourceGroupName -SqlName $mi.ManagedInstanceName -ResourceId $mi.Id
+            Log-Discovery -SqlType "sqlmi" -LicenseType $mi.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $mi.Location -ResourceGroup $mi.ResourceGroupName -SqlName $mi.ManagedInstanceName -ResourceId $mi.Id
 
             if ($mi.LicenseType -eq "BasePrice") {
-                Log-AHBOnly -SqlType "sqlmi" -LicenseType $mi.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionId $SubscriptionId -Region $mi.Location -ResourceGroup $mi.ResourceGroupName -SqlName $mi.ManagedInstanceName -ResourceId $mi.Id
+                Log-AHBOnly -SqlType "sqlmi" -LicenseType $mi.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $mi.Location -ResourceGroup $mi.ResourceGroupName -SqlName $mi.ManagedInstanceName -ResourceId $mi.Id
             }
             
             if ($Mode -eq "write" -and $mi.LicenseType -eq "BasePrice") {
@@ -167,7 +167,7 @@ foreach ($subscription in $subscriptions) {
                 Set-AzSqlInstance -ResourceGroupName $mi.ResourceGroupName -Name $mi.ManagedInstanceName -LicenseType "LicenseIncluded" -Force
                 
                 # Log the successful disablement
-                Log-Disabled -SqlType "sqlmi" -LicenseType "LicenseIncluded" -vCores $vCores -StorageinGB $storageInGB -SubscriptionId $SubscriptionId -Region $mi.Location -ResourceGroup $mi.ResourceGroupName -SqlName $mi.ManagedInstanceName -ResourceId $mi.Id
+                Log-Disabled -SqlType "sqlmi" -LicenseType "LicenseIncluded" -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $mi.Location -ResourceGroup $mi.ResourceGroupName -SqlName $mi.ManagedInstanceName -ResourceId $mi.Id
             }
 
         }      
@@ -186,10 +186,10 @@ foreach ($subscription in $subscriptions) {
                     }
                     $vCores = $db.Capacity
                     $storageInGB = [math]::Round($db.MaxSizeBytes / 1GB, 2)
-                    Log-Discovery -SqlType "sqldb" -LicenseType $db.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionId $SubscriptionId -Region $db.Location -ResourceGroup $db.ResourceGroupName  -SqlName $db.DatabaseName -ResourceId $db.ResourceId
+                    Log-Discovery -SqlType "sqldb" -LicenseType $db.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $db.Location -ResourceGroup $db.ResourceGroupName  -SqlName $db.DatabaseName -ResourceId $db.ResourceId
 
                     if ($db.LicenseType -eq "BasePrice") {
-                        Log-AHBOnly -SqlType "sqldb" -LicenseType $db.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionId $SubscriptionId -Region $db.Location -ResourceGroup $db.ResourceGroupName  -SqlName $db.DatabaseName -ResourceId $db.ResourceId
+                        Log-AHBOnly -SqlType "sqldb" -LicenseType $db.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $db.Location -ResourceGroup $db.ResourceGroupName  -SqlName $db.DatabaseName -ResourceId $db.ResourceId
                     }
                             
                     if ($Mode -eq "write" -and $db.LicenseType -eq "BasePrice") {
@@ -198,7 +198,7 @@ foreach ($subscription in $subscriptions) {
                         Set-AzSqlDatabase -ResourceGroupName $db.ResourceGroupName -ServerName $db.ServerName -DatabaseName $db.DatabaseName -LicenseType "LicenseIncluded"
                         
                         # Log the successful disablement
-                        Log-Disabled -SqlType "sqldb" -LicenseType "LicenseIncluded" -vCores $vCores -StorageinGB $storageInGB -SubscriptionId $SubscriptionId -Region $db.Location -ResourceGroup $db.ResourceGroupName  -SqlName $db.DatabaseName -ResourceId $db.ResourceId
+                        Log-Disabled -SqlType "sqldb" -LicenseType "LicenseIncluded" -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $db.Location -ResourceGroup $db.ResourceGroupName  -SqlName $db.DatabaseName -ResourceId $db.ResourceId
                     }
                 }
             }
@@ -208,10 +208,10 @@ foreach ($subscription in $subscriptions) {
             foreach ($pool in $sqlElasticPools) {
                 $vCores = $pool.Capacity
                 $storageInGB = [math]::Round($pool.StorageMB / 1024, 2)
-                Log-Discovery -SqlType "sqlpool" -LicenseType $pool.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionId $SubscriptionId -Region $pool.Location -ResourceGroup $pool.ResourceGroupName -SqlName $pool.ElasticPoolName -ResourceId $pool.ResourceId
+                Log-Discovery -SqlType "sqlpool" -LicenseType $pool.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $pool.Location -ResourceGroup $pool.ResourceGroupName -SqlName $pool.ElasticPoolName -ResourceId $pool.ResourceId
 
                 if ($pool.LicenseType -eq "BasePrice") {
-                    Log-AHBOnly -SqlType "sqlpool" -LicenseType $pool.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionId $SubscriptionId -Region $pool.Location -ResourceGroup $pool.ResourceGroupName -SqlName $pool.ElasticPoolName -ResourceId $pool.ResourceId
+                    Log-AHBOnly -SqlType "sqlpool" -LicenseType $pool.LicenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $pool.Location -ResourceGroup $pool.ResourceGroupName -SqlName $pool.ElasticPoolName -ResourceId $pool.ResourceId
                 }
                                   
                 if ($Mode -eq "write" -and $pool.LicenseType -eq "BasePrice") {
@@ -220,7 +220,7 @@ foreach ($subscription in $subscriptions) {
                     Set-AzSqlElasticPool -ResourceGroupName $pool.ResourceGroupName -ServerName $pool.ServerName -ElasticPoolName $pool.ElasticPoolName -LicenseType "LicenseIncluded"
                     
                     # Log the successful disablement
-                    Log-Disabled -SqlType "sqlpool" -LicenseType "LicenseIncluded" -vCores $vCores -StorageinGB $storageInGB -SubscriptionId $SubscriptionId -Region $pool.Location -ResourceGroup $pool.ResourceGroupName -SqlName $pool.ElasticPoolName -ResourceId $pool.ResourceId
+                    Log-Disabled -SqlType "sqlpool" -LicenseType "LicenseIncluded" -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $pool.Location -ResourceGroup $pool.ResourceGroupName -SqlName $pool.ElasticPoolName -ResourceId $pool.ResourceId
                 }
             }
 
@@ -236,4 +236,4 @@ foreach ($subscription in $subscriptions) {
     }
 }
 
-Write-Output "$(Get-Date -Format HH:mm:ss) Discovery and disablement completed. Check the discovery.txt, ahbonly.txt and disabledsql.txt files for details."
+Write-Output "$(Get-Date -Format HH:mm:ss) Discovery and disablement completed. Check the findallsqlsvr.txt, findahbonly.txt and resultpaygo.txt files for details."
