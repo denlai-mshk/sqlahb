@@ -12,6 +12,12 @@ if (-not (Get-Module -ListAvailable -Name Az.Sql)) {
     Install-Module -Name Az.Sql -AllowClobber -Force
 }
 Import-Module Az.Sql
+
+if (-not (Get-Module -ListAvailable -Name Az.Compute)) {
+    Install-Module -Name Az.Compute -AllowClobber -Force
+}
+Import-Module Az.Compute
+
 <#
 # Ensure proper login
 $TenantId = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx"
@@ -229,6 +235,24 @@ foreach ($subscription in $subscriptions) {
         }
 
 
+        # Discover SQL Virtual Machines
+        Write-Output "$(Get-Date -Format HH:mm:ss) Processing SQL Virtual Machines"
+        $sqlVms = Get-AzResource -ResourceType "Microsoft.SqlVirtualMachine/sqlVirtualMachines" -ExpandProperties
+        foreach ($sqlVm in $sqlVms) {
+            $sqlVmProperties = $sqlVm.Properties
+            $licenseType = $sqlVmProperties.sqlServerLicenseType
+            $sqlImageSku = $sqlVmProperties.sqlImageSku
+
+            if ($sqlImageSku -ne "Developer") {
+                $vCores = "N/A" # vCores might not be directly available
+                $storageInGB = "N/A" # Storage details can be complex to extract
+                Log-Discovery -SqlType "sqlvm" -LicenseType $licenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $sqlVm.Location -ResourceGroup $sqlVm.ResourceGroupName -SqlName $sqlVm.Name -ResourceId $sqlVm.Id
+
+                if ($LicenseType -eq "AHUB") {
+                    Log-AHBOnly -SqlType "sqlvm" -LicenseType $licenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $sqlVm.Location -ResourceGroup $sqlVm.ResourceGroupName -SqlName $sqlVm.Name -ResourceId $sqlVm.Id
+                }
+            }
+        }
 
 
     } catch {
