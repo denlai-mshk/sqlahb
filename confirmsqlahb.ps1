@@ -223,11 +223,40 @@ foreach ($subscription in $subscriptions) {
                     Log-Disabled -SqlType "sqlpool" -LicenseType "LicenseIncluded" -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $pool.Location -ResourceGroup $pool.ResourceGroupName -SqlName $pool.ElasticPoolName -ResourceId $pool.ResourceId
                 }
             }
-
-                   
-            
         }
+        # Discover SQL Virtual Machines
+        Write-Output "$(Get-Date -Format HH:mm:ss) Processing SQL Virtual Machines"
+        $sqlVms = Get-AzResource -ResourceType "Microsoft.SqlVirtualMachine/sqlVirtualMachines" -ExpandProperties
+        foreach ($sqlVm in $sqlVms) {
+            $sqlVmProperties = $sqlVm.Properties
+            $licenseType = $sqlVmProperties.sqlServerLicenseType
+            $sqlImageSku = $sqlVmProperties.sqlImageSku
+            if ($sqlImageSku -ne "Developer") {
+                $vCores = "N/A" # vCores might not be directly available
+                $storageInGB = "N/A" # Storage details can be complex to extract
+                Log-Discovery -SqlType "sqlvm" -LicenseType $licenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $sqlVm.Location -ResourceGroup $sqlVm.ResourceGroupName -SqlName $sqlVm.Name -ResourceId $sqlVm.Id
+    
+    
+                if ($licenseType -eq "AHUB") {
+                    Log-AHBOnly -SqlType "sqlvm" -$licenseType -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $sqlVm.Location -ResourceGroup $sqlVm.ResourceGroupName -SqlName $sqlVm.Name -ResourceId $sqlVm.Id
+                }
+                                    
+                if ($Mode -eq "write" -and $licenseType -eq "AHUB") {
+                    # Disable Azure Hybrid Benefit
+                    Write-Output "$(Get-Date -Format HH:mm:ss) Processing Set-AzResource"
+                    # Update the sqlServerLicenseType property to PAYG
+                    $sqlVM.Properties.sqlServerLicenseType = "PAYG"
 
+                    # Update the resource with the new properties
+                    Set-AzResource -ResourceId $sqlVM.ResourceId -Properties $sqlVM.Properties -ApiVersion "2023-10-01" -Force
+                    
+                    # Log the successful disablement
+                    Log-Disabled -SqlType "sqlvm" -LicenseType "PAYG" -vCores $vCores -StorageinGB $storageInGB -SubscriptionName $SubscriptionName -Region $sqlVm.Location -ResourceGroup $sqlVm.ResourceGroupName -SqlName $sqlVm.Name -ResourceId $sqlVm.Id
+                }  
+
+            }
+               
+        }
 
 
 
