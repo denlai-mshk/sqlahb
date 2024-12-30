@@ -7,6 +7,7 @@ This Powershell scripts are designed for changing the license type for all SQL S
 ```
     Install-Module -Name Az.Accounts -AllowClobber -Force
     Install-Module -Name Az.Sql -AllowClobber -Force
+    Install-Module -Name Az.Compute -AllowClobber -Force
 ```
 
 ##  Step 3: Verify the Installation
@@ -14,6 +15,7 @@ You can verify that the module is installed and the cmdlets are available by lis
 ```
 Get-Module -ListAvailable -Name Az.Sql
 Get-Module -ListAvailable -Name Az.Accounts
+Get-Module -ListAvailable -Name Az.Compute
 ```   
 
 ##  Step 3: Verify the Installation
