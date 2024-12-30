@@ -1,5 +1,5 @@
 # Batch change the SQL Server license type for multiple subscriptions
-This Powershell scripts are designed for changing the license type for all SQL Servers deloyed in multiple subscriptions, from Azure Hybrid Benefit to Pay as You Go. It supports Azure SQL Database, Azure SQL Elastic Pool, Azure SQL Managed Instance and Azure SQL Managed Instance Pool.
+This Powershell scripts are designed for changing the license type for all SQL Servers deloyed in multiple subscriptions, from Azure Hybrid Benefit to Pay as You Go. It supports **Azure SQL on VM**, **Azure SQL Database**, **Azure SQL Elastic Pool**, **Azure SQL Managed Instance** and **Azure SQL Managed Instance Pool**.
 
 
 ##  Step 1: Install the Azure PowerShell Module
@@ -38,7 +38,7 @@ Open powershell, locate to the script folder, execute  [checksqlahb](checksqlahb
 
 Set license change may takes 1-2 minutues for each SQL Server approximately. Please be patient if your subscriptions have a lot of SQL Server.
 
-After you see "Discovery and disablement completed", you can check the **findallsqlsvr.txt** for all SQL Servers discovery. You also can check the findahbonly.txt which only list out the SQL Server with Azure Hybrid Benefit enabled.    
+After you see "Discovery and disablement completed", you can check the **findallsqlsvr.txt** for all SQL Servers discovery. You also can check the **findahbonly.txt** which only list out all kinds of SQL Servers with Azure Hybrid Benefit enabled.    
 
 ##  Step 6: Execute the confirmsqlahb.ps1 for change all Azure Hybrid Benegfit to PayGO
 If you confirm to change all the SQL Servers listed in the **findallsqlsvr.txt** from Azure Hybrid Benefit to Pay as you go, then execute  [confirmsqlahb](confirmsqlahb.ps1)
