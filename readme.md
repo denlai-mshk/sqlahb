@@ -42,7 +42,7 @@ Set license change may takes 1-2 minutues for each SQL Server approximately. Ple
 
 After you see "Discovery and disablement completed", you can check the **findallsqlsvr.txt** for all SQL Servers discovery. You also can check the **findahbonly.txt** which only list out all kinds of SQL Servers with Azure Hybrid Benefit enabled.    
 
-##  Step 6: Execute the confirmsqlahb.ps1 for change all Azure Hybrid Benegfit to PayGO
+##  Step 6: Execute the confirmsqlahb.ps1 for change all Azure Hybrid Benefit to PayGO
 If you confirm to change all the SQL Servers listed in the **findallsqlsvr.txt** from Azure Hybrid Benefit to Pay as you go, then execute  [confirmsqlahb](confirmsqlahb.ps1)
 
 ``` 
